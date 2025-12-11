@@ -1,0 +1,184 @@
+.progress-tracker {
+  background: white;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+.tracker-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 16px;
+}
+
+.tracker-header h3 {
+  font-size: 14px;
+  font-weight: 600;
+  color: #1e293b;
+  margin: 0;
+}
+
+.tracker-header .info-icon {
+  color: #94a3b8;
+}
+
+.tracker-header .view-more {
+  margin-left: auto;
+  font-size: 12px;
+  color: #6366f1;
+  text-decoration: none;
+}
+
+.tracker-header .view-more:hover {
+  text-decoration: underline;
+}
+
+.heatmap-container {
+  margin-bottom: 20px;
+}
+
+.month-labels {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 8px;
+  padding-left: 30px;
+}
+
+.month-label {
+  flex: 1;
+  font-size: 11px;
+  color: #94a3b8;
+}
+
+.heatmap-grid {
+  display: flex;
+  gap: 4px;
+}
+
+.day-labels {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.day-label {
+  font-size: 10px;
+  color: #94a3b8;
+  height: 12px;
+  display: flex;
+  align-items: center;
+}
+
+.weeks-grid {
+  display: flex;
+  gap: 2px;
+  flex: 1;
+}
+
+.week-column {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.heatmap-cell {
+  width: 12px;
+  height: 12px;
+  border-radius: 2px;
+  background: #f1f5f9;
+}
+
+.heatmap-cell.empty {
+  background: #f8fafc;
+}
+
+.heatmap-cell.low-positive {
+  background: #bbf7d0;
+}
+
+.heatmap-cell.medium-positive {
+  background: #4ade80;
+}
+
+.heatmap-cell.high-positive {
+  background: #16a34a;
+}
+
+.heatmap-cell.low-negative {
+  background: #fecaca;
+}
+
+.heatmap-cell.medium-negative {
+  background: #f87171;
+}
+
+.heatmap-cell.high-negative {
+  background: #dc2626;
+}
+
+.heatmap-legend {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 12px;
+  justify-content: flex-end;
+  font-size: 11px;
+  color: #94a3b8;
+}
+
+.legend-cells {
+  display: flex;
+  gap: 2px;
+}
+
+.legend-cell {
+  width: 12px;
+  height: 12px;
+  border-radius: 2px;
+}
+
+.legend-cell.empty {
+  background: #f1f5f9;
+}
+
+.todays-score {
+  border-top: 1px solid #e2e8f0;
+  padding-top: 16px;
+}
+
+.score-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: #64748b;
+  margin-bottom: 8px;
+}
+
+.score-header .info-icon {
+  color: #94a3b8;
+}
+
+.score-value {
+  font-size: 24px;
+  font-weight: 700;
+  color: #1e293b;
+  margin-bottom: 12px;
+}
+
+.checklist-btn {
+  background: #f1f5f9;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-size: 13px;
+  color: #64748b;
+  cursor: pointer;
+  width: 100%;
+}
+
+.checklist-btn:hover {
+  background: #e2e8f0;
+  color: #1e293b;
+}

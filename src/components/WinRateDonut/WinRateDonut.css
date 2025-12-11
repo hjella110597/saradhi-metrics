@@ -1,0 +1,25 @@
+.win-rate-donut {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.donut-labels {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-left: 8px;
+}
+
+.donut-labels span {
+  font-size: 11px;
+  font-weight: 500;
+}
+
+.donut-labels .wins {
+  color: #10b981;
+}
+
+.donut-labels .losses {
+  color: #ef4444;
+}

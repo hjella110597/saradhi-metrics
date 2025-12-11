@@ -1,0 +1,109 @@
+.recent-trades {
+  background: white;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  display: flex;
+  flex-direction: column;
+}
+
+.trades-header {
+  margin-bottom: 16px;
+}
+
+.tabs {
+  display: flex;
+  gap: 8px;
+  border-bottom: 1px solid #e2e8f0;
+  padding-bottom: 12px;
+}
+
+.tab {
+  background: none;
+  border: none;
+  padding: 8px 16px;
+  font-size: 13px;
+  font-weight: 500;
+  color: #64748b;
+  cursor: pointer;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+}
+
+.tab:hover {
+  background: #f1f5f9;
+  color: #1e293b;
+}
+
+.tab.active {
+  color: #6366f1;
+  background: #eef2ff;
+}
+
+.trades-list {
+  flex: 1;
+  overflow-y: auto;
+  max-height: 300px;
+}
+
+.trade-row {
+  display: flex;
+  align-items: center;
+  padding: 12px 0;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.trade-row:last-child {
+  border-bottom: none;
+}
+
+.trade-date {
+  flex: 1;
+  font-size: 13px;
+  color: #64748b;
+}
+
+.trade-ticker {
+  flex: 1;
+  font-size: 13px;
+  font-weight: 500;
+  color: #1e293b;
+}
+
+.trade-pnl {
+  font-size: 13px;
+  font-weight: 600;
+  text-align: right;
+  min-width: 60px;
+}
+
+.trade-pnl.positive {
+  color: #10b981;
+}
+
+.trade-pnl.negative {
+  color: #ef4444;
+}
+
+.no-positions {
+  text-align: center;
+  padding: 40px 20px;
+  color: #94a3b8;
+  font-size: 14px;
+}
+
+.view-more-btn {
+  margin-top: 16px;
+  background: none;
+  border: none;
+  color: #6366f1;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  text-align: center;
+  padding: 8px;
+}
+
+.view-more-btn:hover {
+  text-decoration: underline;
+}
