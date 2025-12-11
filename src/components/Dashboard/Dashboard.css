@@ -1,0 +1,254 @@
+.dashboard {
+  min-height: 100vh;
+  background: #f8fafc;
+}
+
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  gap: 16px;
+}
+
+.loading-spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid #e2e8f0;
+  border-top-color: #6366f1;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.loading-container p {
+  color: #64748b;
+  font-size: 14px;
+}
+
+.subscription-banner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px 24px;
+  background: #fef3cd;
+  border-bottom: 1px solid #ffc107;
+}
+
+.subscription-banner .icon {
+  width: 20px;
+  height: 20px;
+  background: #1e293b;
+  color: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.subscription-banner p {
+  margin: 0;
+  font-size: 13px;
+  color: #1e293b;
+}
+
+.subscription-banner a {
+  color: #6366f1;
+  font-weight: 500;
+  text-decoration: none;
+}
+
+.subscription-banner a:hover {
+  text-decoration: underline;
+}
+
+.dashboard-content {
+  padding: 24px;
+  max-width: 1600px;
+  margin: 0 auto;
+}
+
+/* Metrics Row */
+.metrics-row {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.metric-with-badge {
+  position: relative;
+}
+
+.metric-with-donut {
+  position: relative;
+}
+
+.donut-overlay {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+}
+
+.metric-donut-card {
+  padding-right: 100px;
+}
+
+.pf-ring {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background: conic-gradient(
+    #a855f7 calc(var(--progress) * 360deg),
+    #f3e8ff calc(var(--progress) * 360deg)
+  );
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.pf-ring::before {
+  content: "";
+  width: 44px;
+  height: 44px;
+  background: white;
+  border-radius: 50%;
+}
+
+.metric-avg-win-loss {
+  position: relative;
+}
+
+.avg-bar {
+  position: absolute;
+  bottom: 20px;
+  left: 20px;
+  right: 20px;
+  height: 8px;
+  display: flex;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.avg-win {
+  flex: 1;
+  background: linear-gradient(to right, #10b981, #34d399);
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  padding-left: 8px;
+}
+
+.avg-loss {
+  flex: 1;
+  background: linear-gradient(to left, #ef4444, #fca5a5);
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding-right: 8px;
+}
+
+.avg-win span,
+.avg-loss span {
+  font-size: 10px;
+  font-weight: 600;
+  color: white;
+  white-space: nowrap;
+  transform: translateY(-18px);
+}
+
+.avg-win span {
+  color: #10b981;
+}
+
+.avg-loss span {
+  color: #ef4444;
+}
+
+/* Dashboard Grid */
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 24px;
+  margin-bottom: 24px;
+}
+
+.grid-left,
+.grid-center,
+.grid-right {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+/* Calendar Section */
+.calendar-section-wrapper {
+  margin-bottom: 24px;
+}
+
+/* Performance Section */
+.performance-section {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+}
+
+/* Responsive Design */
+@media (max-width: 1400px) {
+  .metrics-row {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .dashboard-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .grid-right {
+    grid-column: span 2;
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+
+  .grid-right > * {
+    flex: 1;
+    min-width: 300px;
+  }
+}
+
+@media (max-width: 1024px) {
+  .metrics-row {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .dashboard-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .grid-right {
+    grid-column: span 1;
+    flex-direction: column;
+  }
+
+  .performance-section {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 640px) {
+  .metrics-row {
+    grid-template-columns: 1fr;
+  }
+
+  .dashboard-content {
+    padding: 16px;
+  }
+}

@@ -1,0 +1,195 @@
+.dashboard-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 24px;
+  background: white;
+  border-bottom: 1px solid #e2e8f0;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.header-left h1 {
+  font-size: 20px;
+  font-weight: 600;
+  color: #1e293b;
+  margin: 0;
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.header-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 12px;
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  font-size: 13px;
+  color: #1e293b;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.header-btn:hover {
+  border-color: #6366f1;
+  background: #fafafa;
+}
+
+.header-btn svg {
+  color: #64748b;
+}
+
+.currency-btn {
+  padding: 8px 10px;
+}
+
+.filter-btn {
+  color: #6366f1;
+}
+
+.filter-btn svg:first-child {
+  color: #6366f1;
+}
+
+.account-btn {
+  gap: 8px;
+}
+
+.account-icon {
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+}
+
+.sub-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 24px;
+  background: #fef3cd;
+  border-bottom: 1px solid #ffc107;
+}
+
+.import-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 13px;
+  color: #64748b;
+}
+
+.resync-btn {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: none;
+  border: none;
+  color: #6366f1;
+  font-size: 13px;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 4px;
+}
+
+.resync-btn:hover {
+  background: rgba(99, 102, 241, 0.1);
+}
+
+.data-source-toggle {
+  display: flex;
+  align-items: center;
+}
+
+.toggle-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: #64748b;
+  cursor: pointer;
+}
+
+.toggle-label input {
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.start-day-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  background: #f1f5f9;
+  border: none;
+  border-radius: 8px;
+  font-size: 13px;
+  color: #64748b;
+  cursor: pointer;
+}
+
+.start-day-btn:hover {
+  background: #e2e8f0;
+  color: #1e293b;
+}
+
+.settings-btn {
+  padding: 8px;
+  background: none;
+  border: none;
+  color: #64748b;
+  cursor: pointer;
+  border-radius: 6px;
+}
+
+.settings-btn:hover {
+  background: #f1f5f9;
+  color: #1e293b;
+}
+
+/* Subscription banner */
+.subscription-banner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px 24px;
+  background: #fef3cd;
+  border-bottom: 1px solid #ffc107;
+}
+
+.subscription-banner .icon {
+  font-size: 16px;
+}
+
+.subscription-banner p {
+  margin: 0;
+  font-size: 13px;
+  color: #1e293b;
+}
+
+.subscription-banner a {
+  color: #6366f1;
+  font-weight: 500;
+  text-decoration: none;
+}
+
+.subscription-banner a:hover {
+  text-decoration: underline;
+}
