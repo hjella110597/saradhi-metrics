@@ -3,17 +3,22 @@
   border-radius: 12px;
   padding: 20px;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+
+  display: flex;
+  flex-direction: column;
+  height: 100%;
 }
 
 .chart-header {
   display: flex;
   align-items: center;
-  gap: 6px;
-  margin-bottom: 16px;
+  justify-content: space-between;
+  margin-bottom: 20px;
 }
 
 .chart-header h3 {
-  font-size: 14px;
+  font-size: 16px;
   font-weight: 600;
   color: #1e293b;
   margin: 0;
@@ -25,33 +30,38 @@
 }
 
 .chart-container {
+  flex: 1;
   width: 100%;
+  /* Increased height to make bars longer */
+  min-height: 320px;
 }
 
+/* Tooltip Styles */
 .chart-tooltip {
   background: white;
   border: 1px solid #e2e8f0;
   border-radius: 8px;
-  padding: 10px 14px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  padding: 8px 12px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  z-index: 10;
 }
 
 .tooltip-date {
-  font-size: 12px;
+  font-size: 11px;
   color: #64748b;
   margin: 0 0 4px 0;
+  font-weight: 600;
 }
 
 .tooltip-value {
   font-size: 14px;
-  font-weight: 600;
+  font-weight: 700;
   margin: 0;
 }
 
 .tooltip-value.positive {
   color: #10b981;
 }
-
 .tooltip-value.negative {
   color: #ef4444;
 }

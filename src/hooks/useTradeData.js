@@ -1,8 +1,5 @@
-import { useState, useEffect, useMemo } from "react";
-import {
-  fetchSheetData,
-  generateMockData,
-} from "../services/googleSheetsService";
+import { useState, useEffect, useMemo, useCallback } from "react";
+import { fetchAllSheetData } from "../services/googleSheetsService";
 import {
   startOfDay,
   endOfDay,
@@ -15,73 +12,59 @@ import {
   startOfYear,
   subDays,
   isWithinInterval,
-  parseISO,
+  isValid,
 } from "date-fns";
+import { parseDate } from "../utils/dateUtils";
 
 export function useTradeData() {
   const [trades, setTrades] = useState([]);
+  const [daySummary, setDaySummary] = useState([]);
+  const [dayPerformance, setDayPerformance] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [lastImport, setLastImport] = useState(null);
-  const [dateRange, setDateRange] = useState({
-    start: new Date("2025-01-01"),
-    end: new Date("2025-12-11"),
+  const [dateRange, setDateRange] = useState(() => {
+    const today = new Date();
+    const start = new Date(today);
+    start.setMonth(today.getMonth() - 2);
+    return {
+      start,
+      end: today,
+    };
   });
-  const [useMockData, setUseMockData] = useState(true);
 
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
     setLoading(true);
     setError(null);
 
     try {
-      if (useMockData) {
-        const mockData = generateMockData();
-        setTrades(mockData);
-        setLastImport(new Date());
-      } else {
-        const data = await fetchSheetData();
-        setTrades(data);
-        setLastImport(new Date());
-      }
+      const {
+        trades: tradeData,
+        daySummary: summaryData,
+        dayPerformance: perfData,
+      } = await fetchAllSheetData();
+      setTrades(tradeData);
+      setDaySummary(summaryData);
+      setDayPerformance(perfData);
+      setLastImport(new Date());
     } catch (err) {
       setError(err.message);
-      // Fall back to mock data on error
-      const mockData = generateMockData();
-      setTrades(mockData);
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
-    const loadData = async () => {
-      setLoading(true);
-      setError(null);
-
-      try {
-        if (useMockData) {
-          const mockData = generateMockData();
-          setTrades(mockData);
-          setLastImport(new Date());
-        } else {
-          const data = await fetchSheetData();
-          setTrades(data);
-          setLastImport(new Date());
-        }
-      } catch (err) {
-        setError(err.message);
-        const mockData = generateMockData();
-        setTrades(mockData);
-      } finally {
-        setLoading(false);
-      }
-    };
-    loadData();
-  }, [useMockData]);
+    fetchData();
+  }, []); // Empty dependency array - only run on mount
 
   const filteredTrades = useMemo(() => {
     return trades.filter((trade) => {
-      const tradeDate = parseISO(trade.timestamp);
+      if (!trade.timestamp) return false;
+
+      const tradeDate = parseDate(trade.timestamp);
+      if (!isValid(tradeDate)) return false;
+
       return isWithinInterval(tradeDate, {
         start: dateRange.start,
         end: dateRange.end,
@@ -133,16 +116,22 @@ export function useTradeData() {
     const avgLoss = losses.length > 0 ? totalLoss / losses.length : 0;
 
     // Calculate max drawdown
-    let peak = 0;
-    let maxDrawdown = 0;
-    let cumulative = 0;
+    const drawdownResult = filteredTrades.reduce(
+      (acc, trade) => {
+        const newCumulative = acc.cumulative + trade.profitLoss;
+        const newPeak = Math.max(acc.peak, newCumulative);
+        const drawdown = newPeak - newCumulative;
+        const newMaxDrawdown = Math.max(acc.maxDrawdown, drawdown);
+        return {
+          cumulative: newCumulative,
+          peak: newPeak,
+          maxDrawdown: newMaxDrawdown,
+        };
+      },
+      { cumulative: 0, peak: 0, maxDrawdown: 0 }
+    );
 
-    filteredTrades.forEach((trade) => {
-      cumulative += trade.profitLoss;
-      if (cumulative > peak) peak = cumulative;
-      const drawdown = peak - cumulative;
-      if (drawdown > maxDrawdown) maxDrawdown = drawdown;
-    });
+    const maxDrawdown = drawdownResult.maxDrawdown;
 
     return {
       netPnL,
@@ -177,7 +166,7 @@ export function useTradeData() {
   }, [filteredTrades]);
 
   const setPresetDateRange = (preset) => {
-    const today = new Date("2025-12-11");
+    const today = new Date();
 
     switch (preset) {
       case "today":
@@ -217,6 +206,8 @@ export function useTradeData() {
   return {
     trades: filteredTrades,
     allTrades: trades,
+    daySummary,
+    dayPerformance,
     loading,
     error,
     lastImport,
@@ -225,7 +216,5 @@ export function useTradeData() {
     setDateRange,
     setPresetDateRange,
     refetch: fetchData,
-    useMockData,
-    setUseMockData,
   };
 }

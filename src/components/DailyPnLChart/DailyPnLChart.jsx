@@ -10,24 +10,29 @@ import {
   ReferenceLine,
 } from "recharts";
 import { useMemo } from "react";
-import { format, parseISO } from "date-fns";
+import { format } from "date-fns";
 import { Info } from "lucide-react";
+import { parseDate } from "../../utils/dateUtils";
 import "./DailyPnLChart.css";
 
-const CustomTooltip = ({ active, payload, label }) => {
+const CustomTooltip = ({ active, payload, displayMode }) => {
   if (active && payload && payload.length) {
-    const value = payload[0].value;
+    const data = payload[0].payload;
+    const value = displayMode === "dollar" ? data.pnl : data.pnlPercent;
+    const date = data.date;
     return (
       <div className="chart-tooltip">
         <p className="tooltip-date">
-          {format(parseISO(label), "MMM dd, yyyy")}
+          {format(parseDate(date), "MMM dd, yyyy")}
         </p>
         <p className={`tooltip-value ${value >= 0 ? "positive" : "negative"}`}>
           {value >= 0 ? "+" : ""}
-          {value.toLocaleString("en-US", {
-            style: "currency",
-            currency: "USD",
-          })}
+          {displayMode === "dollar"
+            ? value.toLocaleString("en-US", {
+                style: "currency",
+                currency: "USD",
+              })
+            : `${value.toFixed(2)}%`}
         </p>
       </div>
     );
@@ -35,23 +40,35 @@ const CustomTooltip = ({ active, payload, label }) => {
   return null;
 };
 
-export function DailyPnLChart({ trades }) {
+export function DailyPnLChart({ daySummary, displayMode = "dollar" }) {
   const chartData = useMemo(() => {
-    const dailyPnL = {};
+    if (!daySummary || daySummary.length === 0) return [];
 
-    trades.forEach((trade) => {
-      const day = trade.timestamp;
-      dailyPnL[day] = (dailyPnL[day] || 0) + trade.profitLoss;
-    });
-
-    return Object.entries(dailyPnL)
-      .map(([date, pnl]) => ({
-        date,
-        pnl: parseFloat(pnl.toFixed(2)),
-        displayDate: format(parseISO(date), "MM/dd"),
+    return daySummary
+      .filter((day) => day.date)
+      .map((day) => ({
+        date: day.date,
+        pnl: parseFloat(day.profitLoss.toFixed(2)),
+        pnlPercent: parseFloat(day.profitLossPercent.toFixed(2)),
+        displayDate: format(parseDate(day.date), "MM/dd/yy"),
       }))
       .sort((a, b) => a.date.localeCompare(b.date));
-  }, [trades]);
+  }, [daySummary]);
+
+  const dataKey = displayMode === "dollar" ? "pnl" : "pnlPercent";
+
+  const customTicks = useMemo(() => {
+    if (!chartData || chartData.length === 0) return [];
+
+    const indices = [
+      0,
+      Math.floor((chartData.length - 1) * 0.33),
+      Math.floor((chartData.length - 1) * 0.66),
+      chartData.length - 1,
+    ];
+
+    return Array.from(new Set(indices.map((i) => chartData[i].displayDate)));
+  }, [chartData]);
 
   return (
     <div className="daily-pnl-chart">
@@ -60,10 +77,11 @@ export function DailyPnLChart({ trades }) {
         <Info size={14} className="info-icon" />
       </div>
       <div className="chart-container">
-        <ResponsiveContainer width="100%" height={250}>
+        <ResponsiveContainer width="100%" height="100%">
           <BarChart
             data={chartData}
-            margin={{ top: 20, right: 20, bottom: 20, left: 20 }}
+            margin={{ top: 10, right: 10, bottom: 0, left: -20 }}
+            barCategoryGap="20%"
           >
             <CartesianGrid
               strokeDasharray="3 3"
@@ -74,22 +92,31 @@ export function DailyPnLChart({ trades }) {
               dataKey="displayDate"
               axisLine={false}
               tickLine={false}
-              tick={{ fontSize: 11, fill: "#94a3b8" }}
-              interval="preserveStartEnd"
+              tick={{ fontSize: 11, fill: "#475569", fontWeight: 700 }}
+              ticks={customTicks}
+              interval={0}
+              dy={10}
             />
             <YAxis
               axisLine={false}
               tickLine={false}
-              tick={{ fontSize: 11, fill: "#94a3b8" }}
-              tickFormatter={(value) => `$${value}`}
+              tick={{ fontSize: 11, fill: "#475569", fontWeight: 700 }}
+              tickFormatter={(value) =>
+                displayMode === "dollar" ? `$${value}` : `${value}%`
+              }
             />
-            <Tooltip content={<CustomTooltip />} />
-            <ReferenceLine y={0} stroke="#e2e8f0" />
-            <Bar dataKey="pnl" radius={[2, 2, 0, 0]}>
+            <Tooltip
+              content={<CustomTooltip displayMode={displayMode} />}
+              cursor={{ fill: "#f1f5f9", opacity: 0.5 }}
+            />
+            <ReferenceLine y={0} stroke="#cbd5e1" strokeWidth={1} />
+
+            <Bar dataKey={dataKey} maxBarSize={16}>
               {chartData.map((entry, index) => (
                 <Cell
                   key={`cell-${index}`}
-                  fill={entry.pnl >= 0 ? "#10b981" : "#ef4444"}
+                  fill={entry[dataKey] >= 0 ? "#10b981" : "#ef4444"}
+                  radius={entry[dataKey] >= 0 ? [3, 3, 0, 0] : [0, 0, 3, 3]}
                 />
               ))}
             </Bar>

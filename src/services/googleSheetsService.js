@@ -1,12 +1,15 @@
-import { GOOGLE_SHEETS_CONFIG, COLUMN_MAPPING } from "../config/googleSheets";
+import {
+  GOOGLE_SHEETS_CONFIG,
+  TRADE_JOURNAL_COLUMNS,
+  DAY_SUMMARY_COLUMNS,
+  DAY_PERFORMANCE_COLUMNS,
+} from "../config/googleSheets";
 
-/**
- * Fetches data from Google Sheets API
- */
-export async function fetchSheetData() {
-  const { API_KEY, SHEET_ID, SHEET_NAME, RANGE } = GOOGLE_SHEETS_CONFIG;
+export async function fetchTradeJournal() {
+  const { API_KEY, SHEET_ID, TRADE_JOURNAL } = GOOGLE_SHEETS_CONFIG;
+  const { SHEET_NAME, RANGE } = TRADE_JOURNAL;
 
-  const url = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${SHEET_NAME}!${RANGE}?key=${API_KEY}`;
+  const url = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${encodeURIComponent(SHEET_NAME)}!${RANGE}?key=${API_KEY}`;
 
   try {
     const response = await fetch(url);
@@ -16,160 +19,201 @@ export async function fetchSheetData() {
     }
 
     const data = await response.json();
-    return parseSheetData(data.values);
+    return parseTradeJournalData(data.values);
+  } catch (error) {
+    console.error("Error fetching Trade Journal data:", error);
+    throw error;
+  }
+}
+
+export async function fetchDaySummary() {
+  const { API_KEY, SHEET_ID, DAY_SUMMARY } = GOOGLE_SHEETS_CONFIG;
+  const { SHEET_NAME, RANGE } = DAY_SUMMARY;
+
+  const url = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${encodeURIComponent(SHEET_NAME)}!${RANGE}?key=${API_KEY}`;
+
+  try {
+    const response = await fetch(url);
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const data = await response.json();
+    return parseDaySummaryData(data.values);
+  } catch (error) {
+    console.error("Error fetching Day Summary data:", error);
+    throw error;
+  }
+}
+
+export async function fetchDayPerformance() {
+  const { API_KEY, SHEET_ID, DAY_PERFORMANCE } = GOOGLE_SHEETS_CONFIG;
+  const { SHEET_NAME, RANGE } = DAY_PERFORMANCE;
+
+  const url = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${encodeURIComponent(SHEET_NAME)}!${RANGE}?key=${API_KEY}`;
+
+  try {
+    const response = await fetch(url);
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const data = await response.json();
+    return parseDayPerformanceData(data.values);
+  } catch (error) {
+    console.error("Error fetching Day Performance data:", error);
+    throw error;
+  }
+}
+
+export async function fetchAllSheetData() {
+  try {
+    const [trades, daySummary, dayPerformance] = await Promise.all([
+      fetchTradeJournal(),
+      fetchDaySummary(),
+      fetchDayPerformance(),
+    ]);
+
+    return { trades, daySummary, dayPerformance };
   } catch (error) {
     console.error("Error fetching Google Sheets data:", error);
     throw error;
   }
 }
 
-/**
- * Parses raw sheet data into structured trade objects
- */
-function parseSheetData(rows) {
+function parseTradeJournalData(rows) {
   if (!rows || rows.length < 2) {
     return [];
   }
 
-  // Skip header row
-  const dataRows = rows.slice(1);
+  const COL = TRADE_JOURNAL_COLUMNS;
+  const dataRows = rows.slice(1); // Skip header row
 
   return dataRows.map((row, index) => {
-    const buyPrice = parseFloat(row[COLUMN_MAPPING.BUY_PRICE]) || 0;
-    const sellPrice = parseFloat(row[COLUMN_MAPPING.SELL_PRICE]) || 0;
-    const quantity = parseInt(row[COLUMN_MAPPING.QUANTITY]) || 1;
-    const profitLoss = (sellPrice - buyPrice) * quantity * 100; // Options are typically 100 shares
+    const buyPrice = parseFloat(row[COL.BUY_PRICE]) || 0;
+    const sellPrice = parseFloat(row[COL.SELL_PRICE]) || 0;
+    const quantity = parseInt(row[COL.QUANTITY]) || 1;
+
+    const profitLoss = (sellPrice - buyPrice) * quantity * 100;
 
     return {
-      id: row[COLUMN_MAPPING.TRANSACTION_ID] || `trade-${index}`,
-      timestamp: row[COLUMN_MAPPING.TIMESTAMP] || "",
-      ticker: row[COLUMN_MAPPING.TICKER] || "",
-      optionType: row[COLUMN_MAPPING.OPTION_TYPE] || "",
-      strike: parseFloat(row[COLUMN_MAPPING.STRIKE]) || 0,
-      expirationDate: row[COLUMN_MAPPING.EXPIRATION_DATE] || "",
+      id: row[COL.TRANSACTION_ID] || `trade-${index}`,
+      timestamp: row[COL.TIMESTAMP] || "",
+      ticker: row[COL.TICKER] || "",
+      optionType: row[COL.OPTION_TYPE] || "",
+      strike: parseFloat(row[COL.STRIKE]) || 0,
+      expirationDate: row[COL.EXPIRATION_DATE] || "",
       quantity: quantity,
       buyPrice: buyPrice,
       sellPrice: sellPrice,
-      buyTime: row[COLUMN_MAPPING.BUY_TIME] || "",
-      sellTime: row[COLUMN_MAPPING.SELL_TIME] || "",
-      profitPercent: parseFloat(row[COLUMN_MAPPING.PROFIT_PERCENT]) || 0,
+      buyTime: row[COL.BUY_TIME] || "",
+      sellTime: row[COL.SELL_TIME] || "",
+      profitPercent: parseFloat(row[COL.PROFIT_PERCENT]) || 0,
       profitLoss: profitLoss,
-      tradeThesis: row[COLUMN_MAPPING.TRADE_THESIS] || "",
-      rollup: row[COLUMN_MAPPING.ROLLUP] || "",
-      marketConditions: row[COLUMN_MAPPING.MARKET_CONDITIONS] || "",
-      trendAlignment: row[COLUMN_MAPPING.TREND_ALIGNMENT] || "",
-      setup: row[COLUMN_MAPPING.SETUP] || "",
-      entry: row[COLUMN_MAPPING.ENTRY] || "",
-      exit: row[COLUMN_MAPPING.EXIT] || "",
-      riskSizing: row[COLUMN_MAPPING.RISK_SIZING] || "",
-      bypassedSaradhi: row[COLUMN_MAPPING.BYPASSED_SARADHI] || "",
-      bypassedArea: row[COLUMN_MAPPING.BYPASSED_AREA] || "",
-      areasToImprove: row[COLUMN_MAPPING.AREAS_TO_IMPROVE] || "",
-      chartScreenshot: row[COLUMN_MAPPING.CHART_SCREENSHOT] || "",
+      tradeThesis: row[COL.TRADE_THESIS] || "",
+      rollup: row[COL.ROLLUP] || "",
+      marketConditions: row[COL.MARKET_CONDITIONS] || "",
+      trendAlignment: row[COL.TREND_ALIGNMENT] || "",
+      setup: row[COL.SETUP] || "",
+      entry: row[COL.ENTRY] || "",
+      exit: row[COL.EXIT] || "",
+      riskSizing: row[COL.RISK_SIZING] || "",
+      bypassedSaradhi: row[COL.BYPASSED_SARADHI] || "",
+      bypassedArea: row[COL.BYPASSED_AREA] || "",
+      areasToImprove: row[COL.AREAS_TO_IMPROVE] || "",
+      chartScreenshot: row[COL.CHART_SCREENSHOT] || "",
       isWin: profitLoss > 0,
     };
   });
 }
 
 /**
- * Generates mock data for development/demo purposes
+ * Parses raw Day Summary sheet data into structured day objects
  */
-export function generateMockData() {
-  const tickers = [
-    "AAPL",
-    "TSLA",
-    "NVDA",
-    "AMZN",
-    "MSFT",
-    "META",
-    "GOOGL",
-    "SPY",
-    "QQQ",
-    "AMD",
-  ];
-  const optionTypes = ["Call", "Put"];
-  const setups = [
-    "Breakout",
-    "Pullback",
-    "Momentum",
-    "Reversal",
-    "Trend Continuation",
-  ];
-  const marketConditions = ["Bullish", "Bearish", "Neutral", "Volatile"];
-  const trendAlignments = ["Aligned", "Counter-Trend", "Neutral"];
-
-  const trades = [];
-  const startDate = new Date("2025-01-01");
-  const endDate = new Date("2025-12-11");
-
-  let currentDate = new Date(startDate);
-  let tradeId = 1000;
-
-  while (currentDate <= endDate) {
-    // Skip weekends
-    if (currentDate.getDay() !== 0 && currentDate.getDay() !== 6) {
-      // Generate 1-5 trades per day
-      const tradesPerDay = Math.floor(Math.random() * 5) + 1;
-
-      for (let i = 0; i < tradesPerDay; i++) {
-        const ticker = tickers[Math.floor(Math.random() * tickers.length)];
-        const optionType =
-          optionTypes[Math.floor(Math.random() * optionTypes.length)];
-        const strike = Math.floor(Math.random() * 100) + 100;
-        const buyPrice = Math.random() * 5 + 0.5;
-        const profitPercent = (Math.random() - 0.4) * 100; // Slightly negative bias
-        const sellPrice = buyPrice * (1 + profitPercent / 100);
-        const quantity = Math.floor(Math.random() * 5) + 1;
-        const profitLoss = (sellPrice - buyPrice) * quantity * 100;
-
-        const buyHour = Math.floor(Math.random() * 6) + 9;
-        const buyMinute = Math.floor(Math.random() * 60);
-        const sellHour = Math.min(
-          buyHour + Math.floor(Math.random() * 3) + 1,
-          16
-        );
-        const sellMinute = Math.floor(Math.random() * 60);
-
-        const expDate = new Date(currentDate);
-        expDate.setDate(expDate.getDate() + Math.floor(Math.random() * 30) + 1);
-
-        trades.push({
-          id: `TXN-${tradeId++}`,
-          timestamp: currentDate.toISOString().split("T")[0],
-          ticker,
-          optionType,
-          strike,
-          expirationDate: expDate.toISOString().split("T")[0],
-          quantity,
-          buyPrice: parseFloat(buyPrice.toFixed(2)),
-          sellPrice: parseFloat(sellPrice.toFixed(2)),
-          buyTime: `${buyHour.toString().padStart(2, "0")}:${buyMinute.toString().padStart(2, "0")}`,
-          sellTime: `${sellHour.toString().padStart(2, "0")}:${sellMinute.toString().padStart(2, "0")}`,
-          profitPercent: parseFloat(profitPercent.toFixed(2)),
-          profitLoss: parseFloat(profitLoss.toFixed(2)),
-          tradeThesis: "Technical breakout with volume confirmation",
-          rollup: "",
-          marketConditions:
-            marketConditions[
-              Math.floor(Math.random() * marketConditions.length)
-            ],
-          trendAlignment:
-            trendAlignments[Math.floor(Math.random() * trendAlignments.length)],
-          setup: setups[Math.floor(Math.random() * setups.length)],
-          entry: "Good",
-          exit: profitLoss > 0 ? "Good" : "Early",
-          riskSizing: "Appropriate",
-          bypassedSaradhi: Math.random() > 0.8 ? "Yes" : "No",
-          bypassedArea: "",
-          areasToImprove: profitLoss < 0 ? "Patience, Stop Loss" : "",
-          chartScreenshot: "",
-          isWin: profitLoss > 0,
-        });
-      }
-    }
-
-    currentDate.setDate(currentDate.getDate() + 1);
+function parseDaySummaryData(rows) {
+  if (!rows || rows.length < 2) {
+    return [];
   }
 
-  return trades;
+  const COL = DAY_SUMMARY_COLUMNS;
+  const dataRows = rows.slice(1);
+
+  return dataRows.map((row, index) => {
+    const startBalance = parseFloat(row[COL.START_BALANCE]) || 0;
+    const endBalance = parseFloat(row[COL.END_BALANCE]) || 0;
+    const profitLoss = parseFloat(row[COL.PROFIT_LOSS]) || 0;
+    const profitLossPercent = parseFloat(row[COL.PROFIT_LOSS_PERCENT]) || 0;
+
+    return {
+      id: `day-${index}`,
+      date: row[COL.DATE] || "",
+      startBalance,
+      endBalance,
+      profitLoss,
+      profitLossPercent,
+      totalTrades: parseInt(row[COL.TOTAL_TRADES]) || 0,
+      winningTrades: parseInt(row[COL.WINNING_TRADES]) || 0,
+      losingTrades: parseInt(row[COL.LOSING_TRADES]) || 0,
+      openPositions: parseInt(row[COL.OPEN_POSITIONS]) || 0,
+      winRate: parseFloat(row[COL.WIN_RATE]) || 0,
+      avgProfitPercent: parseFloat(row[COL.AVG_PROFIT_PERCENT]) || 0,
+      isWinningDay: profitLoss > 0,
+    };
+  });
+}
+
+/**
+ * Parses raw Day Performance sheet data into structured performance objects
+ */
+function parseDayPerformanceData(rows) {
+  if (!rows || rows.length < 2) {
+    return [];
+  }
+
+  const COL = DAY_PERFORMANCE_COLUMNS;
+  const dataRows = rows.slice(1); // Skip header row
+
+  return dataRows.map((row, index) => {
+    const premarketRoutine = parseInt(row[COL.PREMARKET_ROUTINE]) || 0;
+    const structure = parseInt(row[COL.STRUCTURE]) || 0;
+    const focusList = parseInt(row[COL.FOCUS_LIST]) || 0;
+    const entry = parseInt(row[COL.ENTRY]) || 0;
+    const management = parseInt(row[COL.MANAGEMENT]) || 0;
+    const psychology = parseInt(row[COL.PSYCHOLOGY]) || 0;
+
+    // Calculate average if not provided
+    const average = row[COL.AVERAGE]
+      ? parseInt(row[COL.AVERAGE])
+      : Math.round(
+          (premarketRoutine +
+            structure +
+            focusList +
+            entry +
+            management +
+            psychology) /
+            6
+        );
+
+    return {
+      id: `perf-${index}`,
+      date: row[COL.DATE] || "",
+      premarketRoutine,
+      structure,
+      focusList,
+      entry,
+      management,
+      psychology,
+      average,
+      ratings: {
+        premarket: premarketRoutine,
+        structure: structure,
+        focusList: focusList,
+        entry: entry,
+        management: management,
+        psychology: psychology,
+      },
+    };
+  });
 }
