@@ -9,17 +9,19 @@ import {
   ReferenceLine,
 } from "recharts";
 import { useMemo } from "react";
-import { format, parseISO } from "date-fns";
+import { format } from "date-fns";
 import { Info } from "lucide-react";
+import { parseDate } from "../../utils/dateUtils";
 import "./AccountBalance.css";
 
-const BalanceTooltip = ({ active, payload, label }) => {
+const BalanceTooltip = ({ active, payload }) => {
   if (active && payload && payload.length) {
     const value = payload[0].value;
+    const date = payload[0].payload.date;
     return (
       <div className="chart-tooltip">
         <p className="tooltip-date">
-          {format(parseISO(label), "MMM dd, yyyy")}
+          {format(parseDate(date), "MMM dd, yyyy")}
         </p>
         <p className="tooltip-value">
           Balance:{" "}
@@ -34,34 +36,29 @@ const BalanceTooltip = ({ active, payload, label }) => {
   return null;
 };
 
-export function AccountBalance({ trades, initialBalance = 1500 }) {
+export function AccountBalance({ daySummary }) {
   const chartData = useMemo(() => {
-    const dailyPnL = {};
+    if (!daySummary || daySummary.length === 0) return [];
 
-    trades.forEach((trade) => {
-      const day = trade.timestamp;
-      dailyPnL[day] = (dailyPnL[day] || 0) + trade.profitLoss;
-    });
+    const sortedDays = daySummary
+      .filter((day) => day.date)
+      .sort((a, b) => a.date.localeCompare(b.date));
 
-    const sortedDays = Object.keys(dailyPnL).sort();
+    return sortedDays.map((day) => ({
+      date: day.date,
+      balance: parseFloat((day.endBalance || 0).toFixed(2)),
+      displayDate: format(parseDate(day.date), "MM/dd/yy"),
+    }));
+  }, [daySummary]);
 
-    // Use reduce to accumulate without reassignment
-    const result = sortedDays.reduce((acc, date) => {
-      const prevBalance =
-        acc.length > 0 ? acc[acc.length - 1].balance : initialBalance;
-      const newBalance = prevBalance + dailyPnL[date];
-      acc.push({
-        date,
-        balance: parseFloat(newBalance.toFixed(2)),
-        displayDate: format(parseISO(date), "MM/dd/yy"),
-      });
-      return acc;
-    }, []);
-
-    return result;
-  }, [trades, initialBalance]);
-
-  const deposits = 1300;
+  // Get the starting balance from the first day for the deposit reference line
+  const deposits = useMemo(() => {
+    if (!daySummary || daySummary.length === 0) return 0;
+    const sortedDays = daySummary
+      .filter((day) => day.date)
+      .sort((a, b) => a.date.localeCompare(b.date));
+    return sortedDays[0]?.startBalance || 0;
+  }, [daySummary]);
 
   return (
     <div className="account-balance">
@@ -82,7 +79,7 @@ export function AccountBalance({ trades, initialBalance = 1500 }) {
       </div>
 
       <div className="chart-container">
-        <ResponsiveContainer width="100%" height={180}>
+        <ResponsiveContainer width="100%" height="100%">
           <AreaChart
             data={chartData}
             margin={{ top: 10, right: 10, bottom: 10, left: 10 }}
@@ -102,13 +99,13 @@ export function AccountBalance({ trades, initialBalance = 1500 }) {
               dataKey="displayDate"
               axisLine={false}
               tickLine={false}
-              tick={{ fontSize: 9, fill: "#94a3b8" }}
+              tick={{ fontSize: 11, fill: "#475569", fontWeight: 700 }}
               interval="preserveStartEnd"
             />
             <YAxis
               axisLine={false}
               tickLine={false}
-              tick={{ fontSize: 9, fill: "#94a3b8" }}
+              tick={{ fontSize: 11, fill: "#475569", fontWeight: 700 }}
               tickFormatter={(value) => `$${value}`}
               width={50}
             />

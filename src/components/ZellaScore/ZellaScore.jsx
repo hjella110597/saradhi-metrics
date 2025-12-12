@@ -77,7 +77,6 @@ export function ZellaScore({ metrics }) {
 
       <div className="radar-chart">
         <svg viewBox="0 0 200 200" className="radar-svg">
-          {/* Background circles */}
           {[0.25, 0.5, 0.75, 1].map((scale, i) => (
             <polygon
               key={i}
@@ -96,7 +95,6 @@ export function ZellaScore({ metrics }) {
             />
           ))}
 
-          {/* Axis lines */}
           {radarPoints.map((p, i) => (
             <line
               key={i}
@@ -115,7 +113,6 @@ export function ZellaScore({ metrics }) {
             />
           ))}
 
-          {/* Data polygon */}
           <polygon
             points={radarPoints.map((p) => `${p.x},${p.y}`).join(" ")}
             fill="rgba(99, 102, 241, 0.2)"
@@ -123,13 +120,11 @@ export function ZellaScore({ metrics }) {
             strokeWidth="2"
           />
 
-          {/* Data points */}
           {radarPoints.map((p, i) => (
             <circle key={i} cx={p.x} cy={p.y} r="4" fill="#6366f1" />
           ))}
         </svg>
 
-        {/* Labels */}
         <div className="radar-labels">
           {radarPoints.map((p, i) => (
             <span key={i} className={`radar-label radar-label-${i}`}>
@@ -141,29 +136,37 @@ export function ZellaScore({ metrics }) {
 
       <div className="overall-score">
         <div className="score-label">Your Zella Score</div>
-        <div
-          className="score-value"
-          style={{ color: getScoreColor(overallScore) }}
-        >
-          {overallScore}
-        </div>
-        <div className="score-bar">
+        <div className="score-inline">
           <div
-            className="score-bar-fill"
-            style={{
-              width: `${overallScore}%`,
-              background: `linear-gradient(to right, #ef4444, #f59e0b ${40}%, #10b981 ${70}%)`,
-            }}
-          />
-          <div className="score-marker" style={{ left: `${overallScore}%` }} />
-        </div>
-        <div className="score-scale">
-          <span>0</span>
-          <span>20</span>
-          <span>40</span>
-          <span>60</span>
-          <span>80</span>
-          <span>100</span>
+            className="score-value"
+            style={{ color: getScoreColor(overallScore) }}
+          >
+            {overallScore}
+          </div>
+          <div className="score-divider"></div>
+          <div className="score-bar-container">
+            <div className="score-bar">
+              <div
+                className="score-bar-fill"
+                style={{
+                  width: `${overallScore}%`,
+                  background: `linear-gradient(to right, #ef4444, #f59e0b ${40}%, #10b981 ${70}%)`,
+                }}
+              />
+              <div
+                className="score-marker"
+                style={{ left: `${overallScore}%` }}
+              />
+            </div>
+            <div className="score-scale">
+              <span>0</span>
+              <span>20</span>
+              <span>40</span>
+              <span>60</span>
+              <span>80</span>
+              <span>100</span>
+            </div>
+          </div>
         </div>
       </div>
     </div>

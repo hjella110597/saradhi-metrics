@@ -55,12 +55,48 @@ const DurationTooltip = ({ active, payload }) => {
   return null;
 };
 
+// Extract time from formats like "12/12/2025 09:36:48 EST" or "09:36:48"
+const extractTime = (timeStr) => {
+  if (!timeStr || typeof timeStr !== "string") return null;
+
+  // Match time pattern HH:MM:SS or HH:MM
+  const timeMatch = timeStr.match(/(\d{1,2}):(\d{2})(?::(\d{2}))?/);
+  if (!timeMatch) return null;
+
+  // Check if there's a date before the time (space followed by time)
+  const hasDate =
+    timeStr.includes(" ") && timeStr.indexOf(" ") < timeStr.indexOf(":");
+
+  if (hasDate) {
+    // Extract time part after the space
+    const parts = timeStr.split(" ");
+    const timePart = parts.find((p) => p.includes(":"));
+    if (timePart) {
+      const [hours, minutes] = timePart.split(":").map(Number);
+      return { hours, minutes };
+    }
+  }
+
+  // Direct time format
+  const hours = parseInt(timeMatch[1]) || 0;
+  const minutes = parseInt(timeMatch[2]) || 0;
+  return { hours, minutes };
+};
+
 export function TradeTimePerformance({ trades }) {
   const chartData = useMemo(() => {
     return trades
+      .filter(
+        (trade) =>
+          trade.buyTime &&
+          typeof trade.buyTime === "string" &&
+          trade.buyTime.includes(":")
+      )
       .map((trade) => {
-        const [hours, minutes] = trade.buyTime.split(":").map(Number);
-        const timeDecimal = hours + minutes / 60;
+        const time = extractTime(trade.buyTime);
+        if (!time) return null;
+
+        const timeDecimal = time.hours + time.minutes / 60;
 
         return {
           time: timeDecimal,
@@ -69,7 +105,7 @@ export function TradeTimePerformance({ trades }) {
           isWin: trade.profitLoss > 0,
         };
       })
-      .filter((t) => t.time >= 9 && t.time <= 16);
+      .filter((t) => t && !isNaN(t.time) && t.time >= 9 && t.time <= 16);
   }, [trades]);
 
   return (
@@ -83,15 +119,20 @@ export function TradeTimePerformance({ trades }) {
       </div>
 
       <div className="chart-container">
-        <ResponsiveContainer width="100%" height={220}>
-          <ScatterChart margin={{ top: 20, right: 20, bottom: 20, left: 20 }}>
-            <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
+        <ResponsiveContainer width="98%" height={420}>
+          <ScatterChart>
+            <CartesianGrid
+              strokeDasharray="3 3"
+              stroke="#f1f5f9"
+              verticalFill={["#f8fafc", "#e0e7ef"]}
+            />
             <XAxis
               dataKey="time"
               type="number"
-              domain={[9, 16]}
+              domain={[8.5, 15]}
               ticks={[
-                9, 9.5, 10, 10.5, 11, 11.5, 12, 12.5, 13, 13.5, 14, 14.5, 15,
+                8.5, 9, 9.5, 10, 10.5, 11, 11.5, 12, 12.5, 13, 13.5, 14, 14.5,
+                15,
               ]}
               tickFormatter={(v) => {
                 const h = Math.floor(v);
@@ -100,13 +141,13 @@ export function TradeTimePerformance({ trades }) {
               }}
               axisLine={false}
               tickLine={false}
-              tick={{ fontSize: 10, fill: "#94a3b8" }}
+              tick={{ fontSize: 11, fill: "#475569", fontWeight: 700 }}
             />
             <YAxis
               dataKey="pnl"
               axisLine={false}
               tickLine={false}
-              tick={{ fontSize: 10, fill: "#94a3b8" }}
+              tick={{ fontSize: 11, fill: "#475569", fontWeight: 700 }}
               tickFormatter={(v) => `$${v}`}
             />
             <ZAxis range={[30, 100]} />
@@ -131,11 +172,22 @@ export function TradeTimePerformance({ trades }) {
 export function TradeDurationPerformance({ trades }) {
   const chartData = useMemo(() => {
     return trades
+      .filter(
+        (trade) =>
+          trade.buyTime &&
+          typeof trade.buyTime === "string" &&
+          trade.buyTime.includes(":") &&
+          trade.sellTime &&
+          typeof trade.sellTime === "string" &&
+          trade.sellTime.includes(":")
+      )
       .map((trade) => {
-        const [buyH, buyM] = trade.buyTime.split(":").map(Number);
-        const [sellH, sellM] = trade.sellTime.split(":").map(Number);
-        const buyMinutes = buyH * 60 + buyM;
-        const sellMinutes = sellH * 60 + sellM;
+        const buyTime = extractTime(trade.buyTime);
+        const sellTime = extractTime(trade.sellTime);
+        if (!buyTime || !sellTime) return null;
+
+        const buyMinutes = buyTime.hours * 60 + buyTime.minutes;
+        const sellMinutes = sellTime.hours * 60 + sellTime.minutes;
         const duration = Math.max(sellMinutes - buyMinutes, 1);
 
         return {
@@ -145,7 +197,9 @@ export function TradeDurationPerformance({ trades }) {
           isWin: trade.profitLoss > 0,
         };
       })
-      .filter((t) => t.duration > 0 && t.duration < 600);
+      .filter(
+        (t) => t && !isNaN(t.duration) && t.duration > 0 && t.duration < 600
+      );
   }, [trades]);
 
   return (
@@ -156,15 +210,19 @@ export function TradeDurationPerformance({ trades }) {
       </div>
 
       <div className="chart-container">
-        <ResponsiveContainer width="100%" height={220}>
-          <ScatterChart margin={{ top: 20, right: 20, bottom: 20, left: 20 }}>
-            <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
+        <ResponsiveContainer width="98%" height={420}>
+          <ScatterChart>
+            <CartesianGrid
+              strokeDasharray="3 3"
+              stroke="#f1f5f9"
+              verticalFill={["#f8fafc", "#e0e7ef"]}
+            />
             <XAxis
               dataKey="duration"
               type="number"
               axisLine={false}
               tickLine={false}
-              tick={{ fontSize: 10, fill: "#94a3b8" }}
+              tick={{ fontSize: 11, fill: "#475569", fontWeight: 700 }}
               tickFormatter={(v) => {
                 if (v < 60) return `${v}m`;
                 const h = Math.floor(v / 60);
@@ -176,7 +234,7 @@ export function TradeDurationPerformance({ trades }) {
               dataKey="pnl"
               axisLine={false}
               tickLine={false}
-              tick={{ fontSize: 10, fill: "#94a3b8" }}
+              tick={{ fontSize: 11, fill: "#475569", fontWeight: 700 }}
               tickFormatter={(v) => `$${v}`}
             />
             <ZAxis range={[30, 100]} />

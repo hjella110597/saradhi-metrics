@@ -9,17 +9,19 @@ import {
   ReferenceLine,
 } from "recharts";
 import { useMemo } from "react";
-import { format, parseISO } from "date-fns";
+import { format } from "date-fns";
 import { Info } from "lucide-react";
+import { parseDate, getDateKey } from "../../utils/dateUtils";
 import "./DrawdownChart.css";
 
-const DrawdownTooltip = ({ active, payload, label }) => {
+const DrawdownTooltip = ({ active, payload }) => {
   if (active && payload && payload.length) {
     const value = payload[0].value;
+    const date = payload[0].payload.date;
     return (
       <div className="chart-tooltip">
         <p className="tooltip-date">
-          {format(parseISO(label), "MMM dd, yyyy")}
+          {format(parseDate(date), "MMM dd, yyyy")}
         </p>
         <p className="tooltip-value negative">Drawdown: ${value.toFixed(0)}</p>
       </div>
@@ -33,13 +35,12 @@ export function DrawdownChart({ trades }) {
     const dailyPnL = {};
 
     trades.forEach((trade) => {
-      const day = trade.timestamp;
+      const day = getDateKey(trade.timestamp);
       dailyPnL[day] = (dailyPnL[day] || 0) + trade.profitLoss;
     });
 
     const sortedDays = Object.keys(dailyPnL).sort();
 
-    // Use reduce to accumulate without reassignment
     const result = sortedDays.reduce((acc, date) => {
       const prevTotal = acc.length > 0 ? acc[acc.length - 1].runningTotal : 0;
       const prevPeak = acc.length > 0 ? acc[acc.length - 1].runningPeak : 0;
@@ -52,7 +53,7 @@ export function DrawdownChart({ trades }) {
         runningTotal: newTotal,
         runningPeak: newPeak,
         drawdown: parseFloat(drawdown.toFixed(2)),
-        displayDate: format(parseISO(date), "MM/dd/yy"),
+        displayDate: format(parseDate(date), "MM/dd/yy"),
       });
       return acc;
     }, []);
@@ -90,13 +91,13 @@ export function DrawdownChart({ trades }) {
               dataKey="displayDate"
               axisLine={false}
               tickLine={false}
-              tick={{ fontSize: 9, fill: "#94a3b8" }}
+              tick={{ fontSize: 11, fill: "#475569", fontWeight: 700 }}
               interval="preserveStartEnd"
             />
             <YAxis
               axisLine={false}
               tickLine={false}
-              tick={{ fontSize: 9, fill: "#94a3b8" }}
+              tick={{ fontSize: 11, fill: "#475569", fontWeight: 700 }}
               tickFormatter={(value) => `$${value}`}
               domain={[maxDrawdown * 1.1, 0]}
               width={50}
